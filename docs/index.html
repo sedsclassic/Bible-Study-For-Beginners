@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BibleProject Short Studies</title>
+<style>
+:root{
+  --ink:#27323f;--muted:#6b7684;--paper:#f6f7f9;--white:#fffefa;
+  --green:#3f5f7a;--green-soft:#e6edf3;--gold:#b08a45;--gold-soft:#f6efe0;
+  --line:#e2e6ea;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.68 Georgia,"Times New Roman",serif}
+main{max-width:790px;margin:0 auto;padding:34px 22px 60px}
+header{padding:8px 0 27px;border-bottom:1px solid var(--line);margin-bottom:30px}
+.eyebrow{font:700 .72rem/1.4 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.16em;color:var(--green)}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);line-height:1.06;letter-spacing:-.035em;font-weight:500;margin:12px 0}
+.subtitle{font:1rem/1.65 system-ui,sans-serif;color:var(--muted);max-width:620px;margin:13px 0 20px}
+.search{width:100%;max-width:420px;padding:11px 14px;border:1px solid var(--line);border-radius:7px;background:var(--white);color:var(--ink);font:.95rem system-ui,sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+.search:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+.section{margin:34px 0}
+.section-head{display:flex;align-items:center;gap:13px;margin-bottom:8px}
+.section-mark{font:700 .72rem system-ui,sans-serif;letter-spacing:.1em;color:var(--gold);border-bottom:1px solid #d9c49b;padding-bottom:3px}
+h2{font-size:1.65rem;line-height:1.2;font-weight:500;margin:0}
+.section-intro{font:.94rem/1.6 system-ui,sans-serif;color:var(--muted);margin:8px 0 14px}
+.study{display:block;text-decoration:none;color:inherit;padding:17px 0 18px;border-top:1px solid var(--line);transition:background .15s}
+.study:hover{background:var(--white)}
+.study:hover .arrow{transform:translateX(3px);color:var(--green)}
+.qrow{display:flex;gap:15px;align-items:center}
+.qnum{flex:0 0 30px;height:30px;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font:700 .82rem system-ui,sans-serif}
+.study p{margin:0;font-size:1.17rem;line-height:1.55;flex:1}
+.arrow{font:1.1rem system-ui,sans-serif;color:var(--muted);transition:transform .15s,color .15s}
+.empty{display:none;padding:30px 0;color:var(--muted);font:.95rem system-ui,sans-serif;text-align:center}
+.closing{border-top:1px solid var(--line);padding-top:19px;font:.9rem/1.7 system-ui,sans-serif;color:var(--muted)}
+@media print{
+ body{background:white}main{padding:0;max-width:none}
+ .search{display:none}
+ .study{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">BibleProject · Short studies</div>
+  <h1>Explore the Story</h1>
+  <p class="subtitle" id="subtitle">Short studies built around BibleProject videos, each with questions for thoughtful reflection and discussion.</p>
+  <input class="search" id="search" type="search" placeholder="Search studies…" aria-label="Search studies" autocomplete="off">
+</header>
+
+<div id="list"></div>
+<div class="empty" id="empty">No studies match your search.</div>
+
+<div class="closing">
+  <span>For personal study or group discussion. Choose any study to begin; they can be explored in any order.</span>
+</div>
+</main>
+
+<script>
+// Paste updated index.json contents here when you add new studies.
+const STUDIES = [
+  {"filename":"study_1-1_Bible_summary.html","title":"The Story of the Bible"},
+  {"filename":"study_1-2_Gospel_summary.html","title":"The Messiah"},
+  {"filename":"study_2-1_What_is_the_bible.html","title":"What Is the Bible?"},
+  {"filename":"study_2-2_What_is_the_Gospel.html","title":"The Gospel"},
+  {"filename":"study_2-3_What_is_The_Law.html","title":"What is the Law?"},
+  {"filename":"study_2-4_The_Law_study.html","title":"Purpose of the Law"},
+  {"filename":"study_2-5_Eternal_Life.html","title":"Eternal Life"},
+  {"filename":"study_3-1_Sin.html","title":"Sin"},
+  {"filename":"study_3-2_Atonement.html","title":"Sacrifice and Atonement"},
+  {"filename":"study_3-3_Redemption.html","title":"Redemption"},
+  {"filename":"study_3-4_Covenantal_Relationship.html","title":"Covenantal Relationship"},
+  {"filename":"study_4-1_Trinity.html","title":"The Trinity"},
+  {"filename":"study_4-2_The_Spirit_of_God.html","title":"The Spirit of God"},
+  {"filename":"study_4-3_The_Holy_Spirit.html","title":"The Holy Spirit"},
+  {"filename":"study_4-4_Heaven_and_Earth.html","title":"Heaven and Earth"},
+  {"filename":"study_5-1_Exile.html","title":"Exile"},
+  {"filename":"study_5-2_Holiness.html","title":"Holiness"},
+  {"filename":"study_5-3_Son_of_Man.html","title":"Son of Man"},
+  {"filename":"study_5-4_Image_of_God.html","title":"Image of God"},
+  {"filename":"study_5-5_Satan.html","title":"Satan"},
+  {"filename":"study_5-6_Love.html","title":"Love"},
+  {"filename":"study_5-7_Grace.html","title":"Grace"}
+];
+
+// Part names and intros, keyed by the first number in the filename.
+const PART_NAMES = {
+  1: {name:"The Big Picture",            intro:"Begin with the overall story of the Bible and the promised Messiah."},
+  2: {name:"Bible, Gospel & Law",        intro:"Understand what the Bible is, what the good news means, and why God gave the law."},
+  3: {name:"Sin, Sacrifice & Redemption", intro:"Explore what has gone wrong, and how God restores and reconciles."},
+  4: {name:"God & His World",            intro:"Consider who God is and how heaven and earth belong together."},
+  5: {name:"Key Themes",                 intro:"Follow major biblical themes and titles from Genesis to Jesus."}
+};
+
+// Group the studies by the part number in each filename.
+const parts = {};
+STUDIES.forEach(s => {
+  const m = s.filename.match(/study_(\d+)-(\d+)/);
+  const part = m ? parseInt(m[1], 10) : 0;
+  const item = m ? parseInt(m[2], 10) : 0;
+  (parts[part] = parts[part] || []).push({...s, item});
+});
+
+const list = document.getElementById('list');
+const sections = [];
+
+Object.keys(parts).map(Number).sort((a, b) => a - b).forEach(part => {
+  const info = PART_NAMES[part] || {name: "Part " + part, intro: ""};
+  const sec = document.createElement('section');
+  sec.className = 'section';
+
+  const head = document.createElement('div');
+  head.className = 'section-head';
+  const mark = document.createElement('span');
+  mark.className = 'section-mark';
+  mark.textContent = String(part).padStart(2, '0');
+  const h2 = document.createElement('h2');
+  h2.textContent = info.name;
+  head.append(mark, h2);
+  sec.appendChild(head);
+
+  if (info.intro) {
+    const intro = document.createElement('p');
+    intro.className = 'section-intro';
+    intro.textContent = info.intro;
+    sec.appendChild(intro);
+  }
+
+  const links = [];
+  parts[part].sort((a, b) => a.item - b.item).forEach(s => {
+    const a = document.createElement('a');
+    a.className = 'study';
+    a.href = encodeURI(s.filename);
+    a.dataset.title = s.title.toLowerCase();
+
+    const row = document.createElement('div');
+    row.className = 'qrow';
+    const num = document.createElement('span');
+    num.className = 'qnum';
+    num.textContent = s.item || '•';
+    const p = document.createElement('p');
+    p.textContent = s.title;
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.textContent = '→';
+    row.append(num, p, arrow);
+
+    a.appendChild(row);
+    sec.appendChild(a);
+    links.push(a);
+  });
+
+  list.appendChild(sec);
+  sections.push({sec, links});
+});
+
+document.getElementById('subtitle').textContent =
+  STUDIES.length + " short studies built around BibleProject videos, each with questions for thoughtful reflection and discussion.";
+
+// Search filter
+const search = document.getElementById('search');
+const empty = document.getElementById('empty');
+search.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+  let anyVisible = false;
+  sections.forEach(({sec, links}) => {
+    let visible = 0;
+    links.forEach(a => {
+      const show = !q || a.dataset.title.includes(q);
+      a.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    sec.style.display = visible ? '' : 'none';
+    if (visible) anyVisible = true;
+  });
+  empty.style.display = anyVisible ? 'none' : 'block';
+});
+</script>
+</body>
+</html>
